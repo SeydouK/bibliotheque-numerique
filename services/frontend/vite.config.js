@@ -7,10 +7,26 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     proxy: {
-      '/api/livres':        { target: 'http://livres:8001',        rewrite: path => path.replace('/api/livres', '/livres') },
-      '/api/utilisateurs':  { target: 'http://utilisateurs:8002',  rewrite: path => path.replace('/api/utilisateurs', '/utilisateurs') },
-      '/api/emprunts':      { target: 'http://emprunts:8003',      rewrite: path => path.replace('/api/emprunts', '/emprunts') },
-      '/api/reco':          { target: 'http://recommandation:8004', rewrite: path => path.replace('/api/reco', '') },
+      '/api/livres': {
+        target: 'http://livres:8001',
+        changeOrigin: true,
+        rewrite: path => path.replace('/api/livres', '/livres')
+      },
+      '/api/utilisateurs': {
+        target: 'http://utilisateurs:8002',
+        changeOrigin: true,
+        rewrite: path => path.replace('/api/utilisateurs', '/utilisateurs')
+      },
+      '/api/emprunts': {
+        target: 'http://emprunts:8003',
+        changeOrigin: true,
+        rewrite: path => path.replace('/api/emprunts', '/emprunts')
+      },
+      '/api/reco': {
+        target: 'http://recommandation:8004',
+        changeOrigin: true,
+        rewrite: path => path.replace('/api/reco', '')
+      }
     }
   }
 })

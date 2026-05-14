@@ -20,7 +20,7 @@ export default function App() {
     <BrowserRouter>
       <nav style={navStyle}>
         <span style={{ color: 'white', fontWeight: 'bold', fontSize: '1.2rem', marginRight: '2rem' }}>
-          📚 Bibliothèque DIT
+           Bibliothèque DIT
         </span>
         <NavLink to="/"            style={linkStyle}>Livres</NavLink>
         <NavLink to="/utilisateurs" style={linkStyle}>Utilisateurs</NavLink>
