@@ -3,16 +3,14 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 from typing import Optional
-import os
+import time, os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:admin123@db:5432/bibliotheque")
-
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
-
-app = FastAPI(title="Service Livres")
 
 class LivreDB(Base):
     __tablename__ = "livres"
@@ -23,7 +21,19 @@ class LivreDB(Base):
     disponible = Column(Boolean, default=True)
     genre = Column(String)
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    for i in range(10):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("Tables livres créées.")
+            break
+        except Exception as e:
+            print(f"DB pas prête, retry {i+1}/10...")
+            time.sleep(3)
+    yield
+
+app = FastAPI(title="Service Livres", lifespan=lifespan)
 
 class LivreCreate(BaseModel):
     titre: str
@@ -32,10 +42,10 @@ class LivreCreate(BaseModel):
     genre: Optional[str] = None
 
 class LivreUpdate(BaseModel):
-    titre: Optional[str]
-    auteur: Optional[str]
-    genre: Optional[str]
-    disponible: Optional[bool]
+    titre: Optional[str] = None
+    auteur: Optional[str] = None
+    genre: Optional[str] = None
+    disponible: Optional[bool] = None
 
 def get_db():
     db = SessionLocal()

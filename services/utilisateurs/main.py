@@ -1,16 +1,16 @@
 from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy import create_engine, Column, Integer, String, Enum
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+from contextlib import asynccontextmanager
 from typing import Optional
-import enum, os
+import time, os, enum
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:admin123@db:5432/bibliotheque")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
-app = FastAPI(title="Service Utilisateurs")
 
 class TypeUtilisateur(str, enum.Enum):
     etudiant = "Étudiant"
@@ -25,7 +25,19 @@ class UtilisateurDB(Base):
     email = Column(String, unique=True, nullable=False)
     type_utilisateur = Column(String, default="Étudiant")
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    for i in range(10):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("Tables utilisateurs créées.")
+            break
+        except Exception as e:
+            print(f"DB pas prête, retry {i+1}/10...")
+            time.sleep(3)
+    yield
+
+app = FastAPI(title="Service Utilisateurs", lifespan=lifespan)
 
 class UtilisateurCreate(BaseModel):
     nom: str
@@ -34,9 +46,9 @@ class UtilisateurCreate(BaseModel):
     type_utilisateur: TypeUtilisateur = TypeUtilisateur.etudiant
 
 class UtilisateurUpdate(BaseModel):
-    nom: Optional[str]
-    prenom: Optional[str]
-    type_utilisateur: Optional[TypeUtilisateur]
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    type_utilisateur: Optional[TypeUtilisateur] = None
 
 def get_db():
     db = SessionLocal()
