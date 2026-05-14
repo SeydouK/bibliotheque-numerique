@@ -1,0 +1,74 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python dvc_pipeline/preprocess.py
+    deps:
+    - path: dvc_pipeline/preprocess.py
+      hash: md5
+      md5: 8cccb52f9c31425130cdb10fb1decd4b
+      size: 1721
+    outs:
+    - path: data/loans.csv
+      hash: md5
+      md5: f979eca8ac1a902a876b6bed44fff478
+      size: 5264
+    - path: data/loans_clean.csv
+      hash: md5
+      md5: f979eca8ac1a902a876b6bed44fff478
+      size: 5264
+  train:
+    cmd: python dvc_pipeline/train.py
+    deps:
+    - path: data/loans_clean.csv
+      hash: md5
+      md5: f979eca8ac1a902a876b6bed44fff478
+      size: 5264
+    - path: dvc_pipeline/params.yaml
+      hash: md5
+      md5: 96593eb0877ee8d2797f3c4d398ce91e
+      size: 128
+    - path: dvc_pipeline/train.py
+      hash: md5
+      md5: c370b097429ccfddbef5c2c6400eb82d
+      size: 1238
+    params:
+      dvc_pipeline/params.yaml:
+        model:
+          n_neighbors: 5
+          metric: cosine
+          algorithm: brute
+    outs:
+    - path: data/model.pkl
+      hash: md5
+      md5: 6f5f510b451c52618e7cd1fb89aacc52
+      size: 16809
+  evaluate:
+    cmd: python dvc_pipeline/evaluate.py
+    deps:
+    - path: data/loans_clean.csv
+      hash: md5
+      md5: f979eca8ac1a902a876b6bed44fff478
+      size: 5264
+    - path: data/model.pkl
+      hash: md5
+      md5: 6f5f510b451c52618e7cd1fb89aacc52
+      size: 16809
+    - path: dvc_pipeline/evaluate.py
+      hash: md5
+      md5: 86ad47e8217b29c641d9e6dd224a9a31
+      size: 2625
+    - path: dvc_pipeline/params.yaml
+      hash: md5
+      md5: 96593eb0877ee8d2797f3c4d398ce91e
+      size: 128
+    params:
+      dvc_pipeline/params.yaml:
+        data:
+          min_emprunts: 1
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: data/metrics.json
+      hash: md5
+      md5: 3aef3ea24d102e5d955273a96bbbead6
+      size: 138
