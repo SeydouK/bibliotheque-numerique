@@ -1,0 +1,82 @@
+version: "3.9"
+
+networks:
+  biblio-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  model-data:  
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: bibliotheque
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - biblio-net
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bibliotheque"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  livres:
+    build: ./services/livres
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - biblio-net
+
+  utilisateurs:
+    build: ./services/utilisateurs
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - biblio-net
+
+  emprunts:
+    build: ./services/emprunts
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - biblio-net
+
+  recommandation:
+    build: ./services/recommandation
+    ports:
+      - "8004:8004"
+    environment:
+      EMPRUNTS_URL: http://emprunts:8003
+      MODEL_PATH: /app/data/model.pkl
+      DATA_PATH: /app/data/loans.csv
+    volumes:
+      - model-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      emprunts:
+        condition: service_started
+    networks:
+      - biblio-net
