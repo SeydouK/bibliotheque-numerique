@@ -6,6 +6,7 @@ networks:
 
 volumes:
   postgres-data:
+  model-data:  
 
 services:
   db:
@@ -59,5 +60,23 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - biblio-net
+
+  recommandation:
+    build: ./services/recommandation
+    ports:
+      - "8004:8004"
+    environment:
+      EMPRUNTS_URL: http://emprunts:8003
+      MODEL_PATH: /app/data/model.pkl
+      DATA_PATH: /app/data/loans.csv
+    volumes:
+      - model-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      emprunts:
+        condition: service_started
     networks:
       - biblio-net
