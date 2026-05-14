@@ -1,0 +1,16 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    proxy: {
+      '/api/livres':        { target: 'http://livres:8001',        rewrite: path => path.replace('/api/livres', '/livres') },
+      '/api/utilisateurs':  { target: 'http://utilisateurs:8002',  rewrite: path => path.replace('/api/utilisateurs', '/utilisateurs') },
+      '/api/emprunts':      { target: 'http://emprunts:8003',      rewrite: path => path.replace('/api/emprunts', '/emprunts') },
+      '/api/reco':          { target: 'http://recommandation:8004', rewrite: path => path.replace('/api/reco', '') },
+    }
+  }
+})

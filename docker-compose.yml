@@ -63,6 +63,18 @@ services:
     networks:
       - biblio-net
 
+  frontend:
+    build: ./services/frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - livres
+      - utilisateurs
+      - emprunts
+      - recommandation
+    networks:
+      - biblio-net
+
   recommandation:
     build: ./services/recommandation
     ports:
