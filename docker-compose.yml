@@ -1,0 +1,55 @@
+version: "3.9"
+
+networks:
+  biblio-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: bibliotheque
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - biblio-net
+    ports:
+      - "5432:5432"
+
+  livres:
+    build: ./services/livres
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      - db
+    networks:
+      - biblio-net
+
+  utilisateurs:
+    build: ./services/utilisateurs
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      - db
+    networks:
+      - biblio-net
+
+  emprunts:
+    build: ./services/emprunts
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/bibliotheque
+    depends_on:
+      - db
+    networks:
+      - biblio-net
