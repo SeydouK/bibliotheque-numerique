@@ -1,0 +1,9 @@
+{
+  "rmse": 1.193,
+  "mae": 0.8022,
+  "precision": 0.0,
+  "recall": 0.0,
+  "coverage": 0.64,
+  "nb_users": 50,
+  "nb_livres": 30
+}

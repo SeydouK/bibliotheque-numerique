@@ -1,0 +1,34 @@
+stages:
+  preprocess:
+    cmd: python dvc_pipeline/preprocess.py
+    deps:
+      - dvc_pipeline/preprocess.py
+    outs:
+      - data/loans.csv
+      - data/loans_clean.csv
+
+  train:
+    cmd: python dvc_pipeline/train.py
+    deps:
+      - dvc_pipeline/train.py
+      - data/loans_clean.csv
+      - dvc_pipeline/params.yaml
+    params:
+      - dvc_pipeline/params.yaml:
+          - model
+    outs:
+      - data/model.pkl
+
+  evaluate:
+    cmd: python dvc_pipeline/evaluate.py
+    deps:
+      - dvc_pipeline/evaluate.py
+      - data/loans_clean.csv
+      - data/model.pkl
+      - dvc_pipeline/params.yaml
+    params:
+      - dvc_pipeline/params.yaml:
+          - data
+    metrics:
+      - data/metrics.json:
+          cache: false
